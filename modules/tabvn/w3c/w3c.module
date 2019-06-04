@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Contains w3c.module..
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function w3c_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the w3c module.
+    case 'help.page.w3c':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Remove some head tags to make validated with W3C validator') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements of hook_entity_view_alter()
+ */
+function w3c_entity_view_alter(array &$build, Drupal\Core\Entity\EntityInterface $entity, \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display) {
+  if (!empty($build['#attached']['html_head_link'])) {
+    foreach ($build['#attached']['html_head_link'] as $key => $config) {
+      if ($config[0]['rel'] != 'canonical' && $config[0]['rel'] != 'shortlink') {
+        unset($build['#attached']['html_head_link'][$key]);
+      }
+    }
+  }
+}

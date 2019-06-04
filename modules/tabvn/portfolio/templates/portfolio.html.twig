@@ -1,0 +1,25 @@
+{% if attributes -%}
+<div{{ attributes }}>
+  {% endif %}
+  {% if title %}
+    <h3>{{ title }}</h3>
+  {% endif %}
+  {% if filters %}
+    <ul class="portfolio-filter">
+      <li class="active"><a data-id="*" href="#">{{ empty_filter }}</a></li>
+      {% for filter in filters %}
+        <li><a data-id="{{ filter.id }}" href="#">{{ filter.label }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% if rows %}
+    <ul class="portfolio-items">
+      {% for row in rows %}
+        <li{{ row.attributes.addClass('portfolio-item') }}>{{ row.content }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if attributes -%}
+</div>
+{% endif %}

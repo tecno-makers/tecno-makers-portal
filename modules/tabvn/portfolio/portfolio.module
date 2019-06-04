@@ -1,0 +1,132 @@
+<?php
+
+/**
+ * @file
+ * Contains portfolio.module..
+ */
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Field;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\taxonomy\Entity\Vocabulary;
+
+/**
+ * Implements hook_help().
+ */
+function portfolio_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the owl module.
+    case 'help.page.owl':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Create Portfolio views style.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function portfolio_theme() {
+  return [
+    'portfolio' => [
+      'variables' => ['items' => NULL, 'settings' => NULL],
+    ],
+  ];
+}
+
+
+/**
+ * Prepares variables for Views Portfolio templates.
+ *
+ * Default template: portfolio.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: A View object.
+ */
+function template_preprocess_portfolio(&$variables) {
+  $handler = $variables['view']->style_plugin;
+
+  $view = $variables['view'];
+
+
+  $settings = _portfolio_format_settings($handler->options);
+  $variables['attributes']['data-settings'] = json_encode($settings);
+  $variables['attributes']['class'][] = 'portfolio-wrapper';
+
+  $options = array();
+  $field_name = $handler->options['filterField'];
+  $content_type = $handler->options['content_type'];
+  $field_config = FieldConfig::loadByName('node', $content_type, $field_name);
+  $field_settings = $field_config->getSettings();
+  $bundles = \Drupal::entityManager()->getBundleInfo('taxonomy_term');
+  $handler_settings = $field_settings['handler_settings'];
+  $bundle_names = !empty($handler_settings['target_bundles']) ? $handler_settings['target_bundles'] : array_keys($bundles);
+
+  foreach ($bundle_names as $bundle) {
+    if ($vocabulary = Vocabulary::load($bundle)) {
+      if ($terms = \Drupal::entityManager()->getStorage('taxonomy_term')
+        ->loadTree($vocabulary->id(), 0, NULL, TRUE)
+      ) {
+        foreach ($terms as $term) {
+          $options[$term->id()] = array(
+            'id' => $term->id(),
+            'label' => str_repeat('-', $term->depth) . Html::escape(\Drupal::entityManager()
+                ->getTranslationFromContext($term)
+                ->label())
+          );
+        }
+      }
+    }
+  }
+
+
+  $variables['filters'] = $options;
+
+  $attached = array(
+    '#attached' => array('library' => array('portfolio/portfolio'))
+  );
+  render($attached);
+  template_preprocess_views_view_unformatted($variables);
+  $rows = $variables['rows'];
+  foreach ($rows as $id => $row) {
+    $tid = 0;
+    if (isset($row['content']['#row']->_entity->{$field_name}[0])) {
+      $obj = $row['content']['#row']->_entity->{$field_name}[0];
+      if (method_exists($obj, 'get')) {
+        $target_id = $obj->get('target_id');
+        if (method_exists($target_id, 'getValue')) {
+          $tid = $target_id->getValue();
+        }
+      }
+    }
+    $variables['rows'][$id]['attributes']['data-id'] = $tid;
+    $variables['empty_filter'] = isset($handler->options['empty_filter']) ? t($handler->options['empty_filter'])->render() : t('All')->render();
+  }
+
+}
+
+function _portfolio_format_settings($settings) {
+
+  $default_settings = _portfolio_get_settings();
+  foreach ($settings as $s => $v) {
+    if (!isset($default_settings[$s])) {
+      unset($settings[$s]);
+    }
+  }
+  return $settings;
+}
+
+function _portfolio_get_settings() {
+  $settings = array(
+    'content_type' => 'portfolio',
+    'empty_filter' => 'All',
+    'filterField' => '',
+  );
+
+  return $settings;
+}

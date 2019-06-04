@@ -1,0 +1,31 @@
+<article{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  {% if(content.field_profile_image|render) %}
+  <div class="row">
+    <div class="col-md-4 col-md-push-2">
+      <div class="member-profile-image">
+        {{ content.field_profile_image }}
+      </div>
+    </div>
+    <div class="col-md-6 col-md-push-2 team-member-description">
+      {% endif %}
+
+      {% if not page %}
+        <h2{{ title_attributes }}>
+          <a href="{{ url }}" rel="bookmark">{{ label }}</a>
+        </h2>
+      {% else %}
+        <h2{{ title_attributes }}>{{ label }}</h2>
+      {% endif %}
+
+
+
+      <div{{ content_attributes }}>
+        {{ content|without('field_profile_image') }}
+      </div>
+      {% if content.field_profile_image|render %}
+    </div>
+  </div>
+  {% endif %}
+</article>

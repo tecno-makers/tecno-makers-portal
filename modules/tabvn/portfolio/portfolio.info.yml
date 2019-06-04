@@ -1,0 +1,7 @@
+name: Portfolio
+type: module
+description: Create Portfolio views filter.
+core: 8.x
+package: Tabvn
+dependencies:
+  - views

@@ -1,0 +1,5 @@
+# Schema for the configuration files of the Aklas theme.
+
+aklas.settings:
+  type: theme_settings
+  label: 'Aklas settings'

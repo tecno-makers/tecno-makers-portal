@@ -1,0 +1,27 @@
+global-styling:
+  version: VERSION
+  js:
+    css/nav/slicknav.js: {}
+    js/scripts.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery.once
+    - core/modernizr
+  css:
+    base:
+      'https://fonts.googleapis.com/css?family=Raleway:400,700,600,800%7CMontserrat:400,700%7CLato:400,700,300,300italic%7CRoboto+Slab:400,700%7CMerriweather:400,300italic,300': { type: external }
+      css/nav/slicknav.css: {}
+      css/bootstrap/css/bootstrap.css: {}
+      css/fonts/css/font-awesome.css: {}
+      css/icons/stroke_gap/stroke_gap.css: {}
+    layout:
+      css/layout.css: {}
+
+messages:
+  version: VERSION
+  css:
+    component:
+      css/components/messages.css: { preprocess: false }
+

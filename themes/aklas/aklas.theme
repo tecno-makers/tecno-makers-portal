@@ -1,0 +1,339 @@
+<?php
+use Drupal\Component\Utility\Html;
+
+/**
+ * @file
+ * Functions to support theming in the aklas theme.
+ */
+
+/**
+ * Implements hook_preprocess_HOOK() for html.html.twig.
+ */
+function aklas_preprocess_html(array &$variables) {
+
+
+  if (!empty($variables['root_path'])) {
+    $variables['attributes']['class'][] = 'page-' . HTML::getClass($variables['root_path']);
+  }
+  $is_front = \Drupal::service('path.matcher')->isFrontPage();
+  if ($is_front) {
+    $variables['attributes']['class'][] = 'is-front-page';
+  }
+
+  if (!empty($variables['page']['sidebar_first']) && !empty($variables['page']['sidebar_second'])) {
+    $variables['attributes']['class'][] = 'layout-two-sidebars';
+
+  }
+  elseif (!empty($variables['page']['sidebar_first'])) {
+    $variables['attributes']['class'][] = 'layout-one-sidebar';
+    $variables['attributes']['class'][] = 'layout-sidebar-first';
+  }
+  elseif (!empty($variables['page']['sidebar_second'])) {
+    $variables['attributes']['class'][] = 'layout-one-sidebar';
+    $variables['attributes']['class'][] = 'layout-sidebar-second';
+  }
+  else {
+    $variables['attributes']['class'][] = 'layout-no-sidebars';
+  }
+
+  $is_front = \Drupal::service('path.matcher')->isFrontPage();
+  if ($is_front && isset($variables['page']['page_title'])) {
+    unset($variables['page']['page_title']);
+  }
+
+
+  // header style
+  $header = theme_get_setting('header');
+  $header_style = !empty($header) ? $header : 'default';
+  $variables['attributes']['class'][] = 'header-' . $header_style;
+
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function aklas_page_attachments_alter(array &$page) {
+
+}
+
+/**
+ * Implements hook_preprocess_page() for page.html.twig.
+ */
+function aklas_preprocess_page(array &$variables) {
+  $content_class = 'col-md-12';
+  $sidebar_class = 'col-md-4';
+  if (!empty($variables['page']['sidebar_first']) && !empty($variables['page']['sidebar_second'])) {
+    $variables['attributes']['class'][] = 'layout-two-sidebars';
+    $content_class = 'col-md-6';
+    $sidebar_class = 'col-md-3';
+  }
+  elseif (!empty($variables['page']['sidebar_first'])) {
+    $variables['attributes']['class'][] = 'layout-one-sidebar';
+    $variables['attributes']['class'][] = 'layout-sidebar-first';
+    $content_class = 'col-md-9';
+    $sidebar_class = 'col-md-3';
+  }
+  elseif (!empty($variables['page']['sidebar_second'])) {
+    $variables['attributes']['class'][] = 'layout-one-sidebar';
+    $variables['attributes']['class'][] = 'layout-sidebar-second';
+    $content_class = 'col-md-9';
+    $sidebar_class = 'col-md-3';
+  }
+  else {
+    $variables['attributes']['class'][] = 'layout-no-sidebars';
+    $content_class = 'col-md-12';
+  }
+
+  if (!empty($variables['page']['featured_top'])) {
+    $variables['attributes']['class'][] = 'has-featured-top';
+  }
+
+  $variables['content_class'] = $content_class;
+  $variables['sidebar_class'] = $sidebar_class;
+  $is_front = \Drupal::service('path.matcher')->isFrontPage();
+  if ($is_front && isset($variables['page']['page_title'])) {
+    unset($variables['page']['page_title']);
+  }
+
+}
+
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ */
+function aklas_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if (is_numeric($node)) {
+    $node = node_load($node);
+  }
+  if ($node) {
+    $type = $node->getType();
+    if ($type == 'page') {
+      $suggestions[] = 'page__builder';
+    }
+  }
+
+}
+
+/**
+ * Implements hook_theme_suggestions_node_alter().
+ */
+function aklas_theme_suggestions_node_alter(array &$suggestions, array $variables) {
+
+
+  /*$node = $variables['elements']['#node'];
+
+  if ($variables['elements']['#view_mode'] == "full") {
+
+  }*/
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK() for Block document templates.
+ */
+function aklas_preprocess_block(array &$variables) {
+
+}
+
+/**
+ * Implements hook_theme_suggestions_field_alter().
+ */
+function aklas_theme_suggestions_field_alter(array &$suggestions, array $variables) {
+  /*$element = $variables['element'];
+  $suggestions[] = 'field__' . $element['#view_mode'];
+  $suggestions[] = 'field__' . $element['#view_mode'] . '__' . $element['#field_name'];*/
+}
+
+/**
+ * Implements hook_theme_suggestions_field_alter().
+ */
+function aklas_theme_suggestions_fieldset_alter(array &$suggestions, array $variables) {
+  /*$element = $variables['element'];
+  if (isset($element['#attributes']['class']) && in_array('form-composite', $element['#attributes']['class'])) {
+    $suggestions[] = 'fieldset__form_composite';
+  }*/
+}
+
+/**
+ * Implements hook_preprocess_user().
+ */
+function aklas_preprocess_user(&$variables) {
+
+  $view_mode = isset($variables['elements']['#view_mode']) ? $variables['elements']['#view_mode'] : 'default';
+  $variables['attributes']['class'][] = $view_mode;
+  $variables['view_mode'] = $view_mode;
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function aklas_preprocess_node(array &$variables) {
+
+  $node = $variables['node'];
+  $created = $node->getCreatedTime();
+  $created_month = format_date($created, 'custom', 'M');
+  $created_date = format_date($created, 'custom', 'd');
+  $variables['created_month'] = $created_month;
+  $variables['created_date'] = $created_date;
+
+  $field_commend_name = 'comment';
+  $variables['comment_count'] = !empty($node->{$field_commend_name}->comment_count) ? $node->{$field_commend_name}->comment_count : 0;
+
+  $type = $node->getType();
+  $variables['node_title'] = FALSE;
+  if ($type != 'page') {
+    $variables['node_title'] = TRUE;
+    $variables['attributes']['class'][] = 'is-not-type-page';
+  }
+  $variables['title_attributes']['class'][] = 'node-title';
+  $variables['attributes']['class'][] = 'node';
+  $variables['attributes']['class'][] = 'node-type-' . $type;
+  $variables['attributes']['class'][] = $variables['view_mode'];
+  $content = $variables['content'];
+
+  if (!empty($content['field_image'])) {
+    $image = render($content['field_image']);
+    if (!empty($image)) {
+      $variables['attributes']['class'][] = 'node-has-featured-image';
+    }
+
+
+  }
+  $variables['content_attributes']['class'][] = 'node-content';
+
+  $author = user_view($node->getOwner(), 'default');
+  $variables['about_author'] = $author;
+
+
+  if (isset($variables['attributes']['role'])) {
+    unset($variables['attributes']['role']);
+  }
+
+}
+
+
+/**
+ * Implements hook_theme_suggestions_views_view_alter().
+ */
+function aklas_theme_suggestions_views_view_alter(array &$suggestions, array $variables) {
+
+}
+
+/**
+ * Implements hook_preprocess_form().
+ */
+function aklas_preprocess_form(array &$variables) {
+  //$variables['attributes']['novalidate'] = 'novalidate';
+}
+
+/**
+ * Implements hook_preprocess_select().
+ */
+function aklas_preprocess_select(array &$variables) {
+  //$variables['attributes']['class'][] = 'select-chosen';
+}
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function aklas_preprocess_field(array &$variables, $hook) {
+  /*switch ($variables['element']['#field_name']) {
+  }*/
+}
+
+/**
+ * Implements hook_preprocess_details().
+ */
+function aklas_preprocess_details(array &$variables) {
+  /*$variables['attributes']['class'][] = 'details';
+  $variables['summary_attributes']['class'] = 'summary';*/
+}
+
+/**
+ * Implements hook_theme_suggestions_details_alter().
+ */
+function aklas_theme_suggestions_details_alter(array &$suggestions, array $variables) {
+
+}
+
+/**
+ * Implements hook_preprocess_menu_local_task().
+ */
+function aklas_preprocess_menu_local_task(array &$variables) {
+  //$variables['element']['#link']['url']->setOption('attributes', ['class'=>'rounded']);
+}
+
+/**
+ * Implements hook_preprocess_preprocess_comment().
+ */
+function aklas_preprocess_comment(&$variables) {
+  $comment = $variables['comment'];
+  // Add comment author user ID. Necessary for the comment-by-viewer library.
+  $variables['attributes']['data-comment-user-id'] = $comment->getOwnerId();
+  $variables['attributes']['class'][] = 'comment';
+  $variables['content_attributes']['class'][] = 'comment-content';
+}
+
+/**
+ * Implements hook_preprocess_menu().
+ */
+function aklas_preprocess_menu(&$variables, $hook) {
+
+  /*if (isset($variables['menu_name']) && $variables['menu_name'] == 'main') { // We're doing that for main menu.
+
+    $current_path = \Drupal::request()->getRequestUri();
+    $items = $variables['items'];
+    $blog_path = substr($current_path, 0, 5);
+    foreach ($items as $key => $item) {
+      // If path is current_path, set active to li.
+      if ($item['url']->toString() == '/blog' && $blog_path == '/blog') {
+        // Add active link.
+        $variables['items'][$key]['attributes']['class'] = 'active';
+      }
+    }
+  }*/
+}
+
+
+/**
+ * Implements of hook_form_system_theme_settings_alter()
+ */
+
+function aklas_form_system_theme_settings_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+
+  $form['aklas'] = array(
+    '#type' => 'vertical_tabs',
+    '#default_tab' => 'general',
+  );
+
+  $form['general'] = array(
+    '#type' => 'details',
+    '#title' => t('Default settings'),
+    '#group' => 'aklas',
+  );
+
+  $sytem_settings = array('theme_settings', 'logo', 'favicon');
+  foreach ($sytem_settings as $k) {
+    if (isset($form[$k])) {
+      $form['general'][$k] = $form[$k];
+      unset($form[$k]);
+    }
+  }
+  $form['av'] = array(
+    '#title' => t('Advanced settings'),
+    '#type' => 'details',
+    '#group' => 'aklas',
+  );
+
+  $header_style = theme_get_setting('header');
+  $form['av']['header'] = array(
+    '#title' => t('Header style'),
+    '#type' => 'select',
+    '#options' => array(
+      'default' => t('Default'),
+      'fixed' => t('Fixed'),
+    ),
+    '#default_value' => isset($header_style) ? $header_style : 'default',
+  );
+}

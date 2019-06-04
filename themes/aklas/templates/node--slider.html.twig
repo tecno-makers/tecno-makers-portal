@@ -1,0 +1,15 @@
+<article{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  <div class="slide-inner">
+    {{ content.field_background }}
+    <div class="container">
+      <div{{ content_attributes.addClass('slide-content') }}>
+
+        {{ content|without('field_background', 'links', 'comment') }}
+      </div>
+    </div>
+
+  </div>
+
+</article>

@@ -1,0 +1,5 @@
+name: w3c
+type: module
+description: Remove some head tags to make validated with W3C validator
+core: 8.x
+package: Tabvn

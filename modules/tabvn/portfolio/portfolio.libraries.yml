@@ -1,0 +1,11 @@
+portfolio:
+  css:
+    theme:
+      css/portfolio.css: {}
+  js:
+    js/portfolio.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/jquery.once
